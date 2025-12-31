@@ -2,45 +2,172 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>تسجيل الدخول</title>
     <style>
-        body { font-family: sans-serif; margin: 0; display: flex; justify-content: center; background-color: #EAF0E9; min-height: 100vh; }
-        #container { max-width: 400px; width: 100%; padding: 40px 20px; }
-        .welcome-text { font-size: 26px; font-weight: bold; margin-bottom: 25px; text-align: right; }
-        .input-field { width: 100%; padding: 18px; margin-bottom: 20px; border: 1px solid #c8d1c7; border-radius: 12px; font-size: 18px; box-sizing: border-box; text-align: right; outline: none; }
-        .submit-btn { width: 100%; background-color: #2EAF4A; color: white; border: none; padding: 16px; border-radius: 12px; font-size: 20px; font-weight: bold; cursor: pointer; }
-        .submit-btn:disabled { opacity: 0.6; }
+        body { 
+            font-family: sans-serif; 
+            margin: 0; 
+            display: flex; 
+            justify-content: center; 
+            background-color: #EAF0E9; 
+            min-height: 100vh; 
+        }
+
+        #main-container { 
+            max-width: 400px; 
+            width: 100%; 
+            padding: 50px 20px 0 20px; 
+        }
+
+        .welcome-title { 
+            font-size: 28px; 
+            font-weight: bold; 
+            margin-bottom: 30px; 
+            color: #1a1a1a; 
+            text-align: right; 
+        }
+
+        .input-box { 
+            width: 100%; 
+            padding: 18px; 
+            margin-bottom: 20px; 
+            border: 1px solid #c8d1c7; 
+            border-radius: 12px; 
+            font-size: 18px; 
+            box-sizing: border-box; 
+            text-align: right; 
+            outline: none; 
+            background-color: #ffffff;
+        }
+
+        .toggle-container { 
+            display: flex; 
+            align-items: center; 
+            justify-content: flex-end; 
+            gap: 12px; 
+            margin-bottom: 35px; 
+        }
+
+        /* تصميم زر التبديل (Switch) */
+        .switch-btn { 
+            position: relative; 
+            display: inline-block; 
+            width: 50px; 
+            height: 26px; 
+        }
+
+        .switch-btn input { opacity: 0; width: 0; height: 0; }
+
+        .slider-round { 
+            position: absolute; 
+            cursor: pointer; 
+            top: 0; left: 0; right: 0; bottom: 0; 
+            background-color: #bdc3bc; 
+            transition: .4s; 
+            border-radius: 34px; 
+        }
+
+        .slider-round:before { 
+            position: absolute; 
+            content: ""; 
+            height: 18px; 
+            width: 18px; 
+            right: 4px; 
+            bottom: 4px; 
+            background-color: white; 
+            transition: .4s; 
+            border-radius: 50%; 
+        }
+
+        input:checked + .slider-round { background-color: #2EAF4A; }
+        input:checked + .slider-round:before { transform: translateX(-22px); }
+
+        .login-button { 
+            width: 100%; 
+            background-color: #2EAF4A; 
+            color: white; 
+            border: none; 
+            padding: 16px; 
+            border-radius: 12px; 
+            font-size: 20px; 
+            font-weight: bold; 
+            cursor: pointer; 
+            transition: 0.3s; 
+        }
+
+        .login-button:disabled { 
+            opacity: 0.7; 
+            cursor: not-allowed; 
+        }
     </style>
 </head>
 <body>
-<div id="container">
-    <div class="welcome-text">مرحبا</div>
-    <input type="email" id="userEmail" placeholder="البريد الإلكتروني" class="input-field">
-    <button id="submitBtn" onclick="handleLogin()" class="submit-btn">ولوج</button>
+
+<div id="main-container">
+    <div class="welcome-title">مرحبا</div>
+    
+    <input type="email" id="emailInput" placeholder="البريد الإلكتروني" class="input-box">
+    
+    <div class="toggle-container">
+        <span style="font-size: 16px; color: #333; font-weight: bold;">تذكر البريد الالكتروني</span>
+        <label class="switch-btn">
+            <input type="checkbox" id="rememberCheck" checked>
+            <span class="slider-round"></span>
+        </label>
+    </div>
+
+    <button id="loginBtn" onclick="processLogin()" class="login-button">ولوج</button>
 </div>
 
 <script>
-    async function handleLogin() {
-        const email = document.getElementById('userEmail').value.trim();
-        if (!email) return alert("المرجو إدخال البريد");
+    async function processLogin() {
+        const email = document.getElementById('emailInput').value.trim();
+        const btn = document.getElementById('loginBtn');
 
-        // *** تخزين الإيميل محلياً ***
+        if (!email) {
+            alert("يرجى إدخال البريد الإلكتروني");
+            return;
+        }
+
+        // 1. تخزين الإيميل محلياً ليعمل في الكود الثاني (Verify)
         localStorage.setItem('storedEmail', email);
 
-        const btn = document.getElementById('submitBtn');
         btn.disabled = true;
         btn.innerText = "جاري التحقق...";
 
+        // الرابط الخاص بك
         const scriptURL = 'https://script.google.com/macros/s/AKfycbxy-1Z37l9ynTk10ndPsF4iu7D4I41Ag3KUwnx8KnGKf7yrGSN0IB3u3glol4daSMQCuA/exec';
 
         try {
-            // إرسال الطلب الأول للسكريبت
-            await fetch(`${scriptURL}?email=${encodeURIComponent(email)}`, { mode: 'no-cors' });
-            window.location.href = "verify/";
-        } catch (e) {
+            // 2. إرسال POST Request بصيغة JSON لتناسب دالة doPost الخاصة بك
+            await fetch(scriptURL, {
+                method: 'POST',
+                mode: 'no-cors', // لتجنب مشاكل CORS في المتصفحات
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ email: email })
+            });
+
+            // 3. الانتقال لصفحة التحقق بعد الإرسال
+            setTimeout(() => {
+                window.location.href = "verify/";
+            }, 500);
+
+        } catch (error) {
+            console.error("Error:", error);
+            // حتى لو حدث خطأ في الاتصال، ننتقل لأن الإيميل خُزن محلياً
             window.location.href = "verify/";
         }
     }
+
+    // استرجاع الإيميل إذا كان مخزناً مسبقاً (تذكرني)
+    window.onload = () => {
+        const saved = localStorage.getItem('storedEmail');
+        if (saved) document.getElementById('emailInput').value = saved;
+    };
 </script>
+
 </body>
 </html>
