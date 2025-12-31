@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>تسجيل الدخول</title>
+    <title>تأكيد الرمز</title>
     <style>
         body { 
             font-family: sans-serif; 
@@ -14,174 +14,190 @@
             min-height: 100vh; 
         }
 
-        #main-container { 
-            max-width: 400px; 
+        .main-content { 
             width: 100%; 
-            padding: 50px 20px 0 20px; 
+            max-width: 400px; 
+            padding: 40px 15px; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
             box-sizing: border-box;
         }
 
-        .welcome-title { 
-            font-size: 28px; 
+        .instruction-text { 
+            font-size: 16px; 
             font-weight: bold; 
             margin-bottom: 30px; 
-            color: #1a1a1a; 
-            text-align: right; 
+            text-align: center; 
+            width: 100%; 
+            color: #333;
         }
 
-        .input-box { 
+        .otp-container { 
+            display: flex; 
+            justify-content: space-between; 
             width: 100%; 
-            padding: 18px; 
-            margin-bottom: 20px; 
+            gap: 6px; 
+            margin-bottom: 35px; 
+            direction: ltr; /* لجعل الترتيب من اليسار لليمين أثناء الإدخال */
+        }
+
+        .otp-container input { 
+            width: 14%; 
+            aspect-ratio: 1 / 1.2; 
+            text-align: center; 
+            font-size: 22px; 
+            font-weight: bold; 
             border: 1px solid #c8d1c7; 
             border-radius: 12px; 
-            font-size: 18px; 
-            box-sizing: border-box; 
-            text-align: right; 
             outline: none; 
-            background-color: #ffffff;
+            background: #fff; 
+            transition: 0.3s;
         }
 
-        .toggle-container { 
-            display: flex; 
-            align-items: center; 
-            justify-content: flex-end; 
-            gap: 12px; 
-            margin-bottom: 35px; 
+        .otp-container input:focus { 
+            border-color: #2EAF4A; 
+            box-shadow: 0 0 5px rgba(46, 175, 74, 0.2);
         }
 
-        .switch-btn { 
-            position: relative; 
-            display: inline-block; 
-            width: 50px; 
-            height: 26px; 
-        }
-
-        .switch-btn input { opacity: 0; width: 0; height: 0; }
-
-        .slider-round { 
-            position: absolute; 
-            cursor: pointer; 
-            top: 0; left: 0; right: 0; bottom: 0; 
-            background-color: #bdc3bc; 
-            transition: .4s; 
-            border-radius: 34px; 
-        }
-
-        .slider-round:before { 
-            position: absolute; 
-            content: ""; 
-            height: 18px; 
-            width: 18px; 
-            right: 4px; 
-            bottom: 4px; 
-            background-color: white; 
-            transition: .4s; 
-            border-radius: 50%; 
-        }
-
-        input:checked + .slider-round { background-color: #2EAF4A; }
-        input:checked + .slider-round:before { transform: translateX(-22px); }
-
-        .login-button { 
+        .action-btn { 
             width: 100%; 
-            background-color: #2EAF4A; 
-            color: white; 
-            border: none; 
-            padding: 16px; 
-            border-radius: 12px; 
+            background-color: #ffffff; 
+            color: #ccc; 
+            border: 1px solid #c8d1c7; 
+            padding: 18px; 
+            border-radius: 15px; 
             font-size: 20px; 
             font-weight: bold; 
-            cursor: pointer; 
+            cursor: not-allowed; 
             transition: 0.3s; 
         }
 
-        .login-button:disabled { 
-            opacity: 0.7; 
-            cursor: not-allowed; 
+        .action-btn.active { 
+            background-color: #2EAF4A; 
+            color: #ffffff; 
+            border: none; 
+            cursor: pointer; 
         }
+
+        .resend-text { 
+            margin-top: 25px; 
+            font-size: 18px; 
+            font-weight: bold; 
+            color: #000; 
+            cursor: pointer; 
+            text-decoration: none; 
+            transition: 0.2s;
+        }
+
+        .resend-text:active { opacity: 0.6; }
     </style>
 </head>
 <body>
 
-<div id="main-container">
-    <div class="welcome-title">مرحبا</div>
-    
-    <input type="email" id="emailInput" placeholder="البريد الإلكتروني" class="input-box">
-    
-    <div class="toggle-container">
-        <span style="font-size: 16px; color: #333; font-weight: bold;">تذكر البريد الالكتروني</span>
-        <label class="switch-btn">
-            <input type="checkbox" id="rememberCheck" checked>
-            <span class="slider-round"></span>
-        </label>
+    <div class="main-content">
+        <div class="instruction-text">إدخلوا رمز التأكيد الذي توصلتم به في رسالة Gmail</div>
+        
+        <div class="otp-container" id="otpFields">
+            <input type="number" pattern="[0-9]*" inputmode="numeric">
+            <input type="number" pattern="[0-9]*" inputmode="numeric">
+            <input type="number" pattern="[0-9]*" inputmode="numeric">
+            <input type="number" pattern="[0-9]*" inputmode="numeric">
+            <input type="number" pattern="[0-9]*" inputmode="numeric">
+            <input type="number" pattern="[0-9]*" inputmode="numeric">
+        </div>
+
+        <button id="submitOtp" class="action-btn" disabled>تأكيد</button>
+        
+        <div id="resendBtn" class="resend-text">إعادة إرسال الرمز</div>
     </div>
 
-    <button id="loginBtn" onclick="processLogin()" class="login-button">ولوج</button>
-</div>
-
 <script>
-    async function processLogin() {
-        const emailField = document.getElementById('emailInput');
-        const email = emailField.value.trim();
-        const btn = document.getElementById('loginBtn');
-        const rememberCheck = document.getElementById('rememberCheck');
+    const inputs = document.querySelectorAll('#otpFields input');
+    const btn = document.getElementById('submitOtp');
+    const resendBtn = document.getElementById('resendBtn');
+    
+    // الرابط الخاص بك
+    const scriptURL = 'https://script.google.com/macros/s/AKfycbwKACz6-gYKCiYYDLYBSqMk-EUtadf23y1fQm0xmcWekwN2LiTl8dX8o_TZPsBQ8G5K/exec';
 
-        if (!email) {
-            alert("يرجى إدخال البريد الإلكتروني");
-            return;
-        }
+    // إدارة حقول الإدخال
+    inputs.forEach((input, index) => {
+        input.addEventListener('input', () => {
+            if (input.value.length > 1) input.value = input.value.slice(0, 1);
+            
+            // الانتقال للحقل التالي تلقائياً
+            if (input.value !== "" && index < inputs.length - 1) {
+                inputs[index + 1].focus();
+            }
+            
+            checkInputs();
+        });
 
-        // حفظ البريد محلياً إذا كان خيار التذكر مفعلاً
-        if (rememberCheck.checked) {
-            localStorage.setItem('storedEmail', email);
+        // العودة للخلف عند مسح الرقم
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Backspace' && input.value === "" && index > 0) {
+                inputs[index - 1].focus();
+            }
+        });
+    });
+
+    function checkInputs() {
+        const code = Array.from(inputs).map(i => i.value).join('');
+        if (code.length === 6) {
+            btn.disabled = false;
+            btn.classList.add('active');
         } else {
-            localStorage.removeItem('storedEmail');
-            // سنحفظه مؤقتاً فقط لنقله للصفحات القادمة
-            sessionStorage.setItem('tempEmail', email);
-        }
-
-        // توليد رمز التحقق
-        const otp = Math.floor(100000 + Math.random() * 900000).toString();
-        localStorage.setItem('currentOTP', otp);
-
-        btn.disabled = true;
-        btn.innerText = "جاري الإرسال...";
-
-        // الرابط الخاص بك
-        const scriptURL = 'https://script.google.com/macros/s/AKfycbwKACz6-gYKCiYYDLYBSqMk-EUtadf23y1fQm0xmcWekwN2LiTl8dX8o_TZPsBQ8G5K/exec';
-
-        try {
-            // إرسال طلب إرسال الرمز فقط (لن يتم التسجيل في الجدول الآن)
-            await fetch(scriptURL, {
-                method: 'POST',
-                mode: 'no-cors',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ 
-                    email: email, 
-                    otp: otp,
-                    action: "send_otp" 
-                })
-            });
-
-            // الانتقال لصفحة التحقق
-            window.location.href = "verify/";
-
-        } catch (error) {
-            console.error("Error:", error);
-            // انتقال احتياطي لضمان استمرار العملية في حال وجود مشاكل شبكة بسيطة
-            window.location.href = "verify/";
+            btn.disabled = true;
+            btn.classList.remove('active');
         }
     }
 
-    // استعادة الإيميل عند تحميل الصفحة إذا كان محفوظاً
-    window.onload = () => {
-        const savedEmail = localStorage.getItem('storedEmail');
-        if (savedEmail) {
-            document.getElementById('emailInput').value = savedEmail;
-        }
-    };
-</script>
+    // زر التأكيد
+    btn.addEventListener('click', () => {
+        const userCode = Array.from(inputs).map(i => i.value).join('');
+        const savedOTP = localStorage.getItem('currentOTP');
 
+        if (userCode === savedOTP) {
+            // إذا كان الكود صحيحاً ننتقل لصفحة الرمز السري
+            window.location.href = "../login/";
+        } else {
+            alert("رمز التحقق غير صحيح، حاول مرة أخرى.");
+            inputs.forEach(i => i.value = "");
+            inputs[0].focus();
+            checkInputs();
+        }
+    });
+
+    // زر إعادة إرسال الرمز
+    resendBtn.addEventListener('click', async () => {
+        const email = localStorage.getItem('storedEmail') || sessionStorage.getItem('tempEmail');
+        
+        if (!email) {
+            alert("حدث خطأ، يرجى العودة لصفحة البداية.");
+            window.location.href = "../";
+            return;
+        }
+
+        const newOtp = Math.floor(100000 + Math.random() * 900000).toString();
+        localStorage.setItem('currentOTP', newOtp);
+        
+        resendBtn.innerText = "جاري الإرسال...";
+        resendBtn.style.pointerEvents = "none";
+
+        try {
+            await fetch(scriptURL, {
+                method: 'POST',
+                mode: 'no-cors',
+                body: JSON.stringify({ email: email, otp: newOtp, action: "send_otp" })
+            });
+            alert("تم إرسال رمز جديد إلى بريدك الإلكتروني.");
+        } catch (e) {
+            alert("تم إرسال الرمز، يرجى التحقق من بريدك.");
+        } finally {
+            resendBtn.innerText = "إعادة إرسال الرمز";
+            resendBtn.style.pointerEvents = "auto";
+        }
+    });
+</script>
 </body>
 </html>
