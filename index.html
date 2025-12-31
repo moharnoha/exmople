@@ -1,1 +1,36 @@
-1
+function doGet(e) {
+  // فتح جدول البيانات النشط
+  var ss = SpreadsheetApp.getActiveSpreadsheet(); 
+  
+  // تحديد الصفحة التي اسمها "1"
+  var sheet = ss.getSheetByName("1"); 
+  
+  // التأكد من وجود الصفحة لتجنب الأخطاء
+  if (!sheet) {
+    return createResponse({ status: "error", message: "Sheet '1' not found" });
+  }
+
+  var email = e.parameter.email;
+
+  if (!email) {
+    return createResponse({ status: "empty" });
+  }
+
+  // جلب البيانات من العمود A للبحث عن الإيميل
+  var data = sheet.getRange("A:A").getValues();
+  var isFound = data.flat().includes(email);
+
+  if (isFound) {
+    // الاحتمال الأول: موجود مسبقاً (يذهب لصفحة الدخول مباشرة)
+    return createResponse({ status: "exists" });
+  } else {
+    // الاحتمال الثاني: إيميل جديد (يضاف للجدول ويذهب للتحقق)
+    sheet.appendRow([email]);
+    return createResponse({ status: "added" });
+  }
+}
+
+function createResponse(output) {
+  return ContentService.createTextOutput(JSON.stringify(output))
+    .setMimeType(ContentService.MimeType.JSON);
+}
