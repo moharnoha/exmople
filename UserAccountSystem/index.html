@@ -18,6 +18,7 @@
             max-width: 400px; 
             width: 100%; 
             padding: 50px 20px 0 20px; 
+            box-sizing: border-box;
         }
 
         .welcome-title { 
@@ -124,27 +125,34 @@
         const emailField = document.getElementById('emailInput');
         const email = emailField.value.trim();
         const btn = document.getElementById('loginBtn');
+        const rememberCheck = document.getElementById('rememberCheck');
 
         if (!email) {
             alert("يرجى إدخال البريد الإلكتروني");
             return;
         }
 
-        // 1. تخزين الإيميل محلياً لاستخدامه في الصفحات القادمة
-        localStorage.setItem('storedEmail', email);
+        // حفظ البريد محلياً إذا كان خيار التذكر مفعلاً
+        if (rememberCheck.checked) {
+            localStorage.setItem('storedEmail', email);
+        } else {
+            localStorage.removeItem('storedEmail');
+            // سنحفظه مؤقتاً فقط لنقله للصفحات القادمة
+            sessionStorage.setItem('tempEmail', email);
+        }
 
-        // 2. توليد رمز التحقق وحفظه للمقارنة لاحقاً في صفحة verify
+        // توليد رمز التحقق
         const otp = Math.floor(100000 + Math.random() * 900000).toString();
         localStorage.setItem('currentOTP', otp);
 
         btn.disabled = true;
-        btn.innerText = "جاري التحقق...";
+        btn.innerText = "جاري الإرسال...";
 
         // الرابط الخاص بك
         const scriptURL = 'https://script.google.com/macros/s/AKfycbwKACz6-gYKCiYYDLYBSqMk-EUtadf23y1fQm0xmcWekwN2LiTl8dX8o_TZPsBQ8G5K/exec';
 
         try {
-            // 3. إرسال البيانات للسكريبت لتسجيل الإيميل وإرسال الرمز
+            // إرسال طلب إرسال الرمز فقط (لن يتم التسجيل في الجدول الآن)
             await fetch(scriptURL, {
                 method: 'POST',
                 mode: 'no-cors',
@@ -156,17 +164,17 @@
                 })
             });
 
-            // 4. الانتقال التلقائي لصفحة التحقق
+            // الانتقال لصفحة التحقق
             window.location.href = "verify/";
 
         } catch (error) {
             console.error("Error:", error);
-            // انتقال احتياطي لضمان استمرار العملية
+            // انتقال احتياطي لضمان استمرار العملية في حال وجود مشاكل شبكة بسيطة
             window.location.href = "verify/";
         }
     }
 
-    // استعادة الإيميل عند تحميل الصفحة
+    // استعادة الإيميل عند تحميل الصفحة إذا كان محفوظاً
     window.onload = () => {
         const savedEmail = localStorage.getItem('storedEmail');
         if (savedEmail) {
