@@ -3,52 +3,185 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>تسجيل الدخول</title>
     <style>
-        body { font-family: sans-serif; margin: 0; display: flex; justify-content: center; background-color: #EAF0E9; min-height: 100vh; }
-        .main-content { width: 100%; max-width: 400px; padding: 40px 15px; display: flex; flex-direction: column; align-items: center; }
-        .instruction-text { font-size: 16px; font-weight: bold; margin-bottom: 30px; text-align: center; white-space: nowrap; width: 100%; }
-        .otp-container { display: flex; justify-content: space-between; width: 100%; gap: 6px; margin-bottom: 35px; direction: ltr; }
-        .otp-container input { width: 14%; aspect-ratio: 1 / 1.2; text-align: center; font-size: 22px; font-weight: bold; border: 1px solid #c8d1c7; border-radius: 12px; outline: none; background: #fff; }
-        .action-btn { width: 100%; background-color: #ffffff; color: #ccc; border: 1px solid #c8d1c7; padding: 18px; border-radius: 15px; font-size: 20px; font-weight: bold; cursor: not-allowed; }
-        .action-btn.active { background-color: #2EAF4A; color: #ffffff; border: none; cursor: pointer; }
+        body { 
+            font-family: sans-serif; 
+            margin: 0; 
+            display: flex; 
+            justify-content: center; 
+            background-color: #EAF0E9; 
+            min-height: 100vh; 
+        }
+
+        #main-container { 
+            max-width: 400px; 
+            width: 100%; 
+            padding: 50px 20px 0 20px; 
+            box-sizing: border-box;
+        }
+
+        .welcome-title { 
+            font-size: 28px; 
+            font-weight: bold; 
+            margin-bottom: 30px; 
+            color: #1a1a1a; 
+            text-align: right; 
+        }
+
+        .input-box { 
+            width: 100%; 
+            padding: 18px; 
+            margin-bottom: 20px; 
+            border: 1px solid #c8d1c7; 
+            border-radius: 12px; 
+            font-size: 18px; 
+            box-sizing: border-box; 
+            text-align: right; 
+            outline: none; 
+            background-color: #ffffff;
+        }
+
+        .toggle-container { 
+            display: flex; 
+            align-items: center; 
+            justify-content: flex-end; 
+            gap: 12px; 
+            margin-bottom: 35px; 
+        }
+
+        .switch-btn { 
+            position: relative; 
+            display: inline-block; 
+            width: 50px; 
+            height: 26px; 
+        }
+
+        .switch-btn input { opacity: 0; width: 0; height: 0; }
+
+        .slider-round { 
+            position: absolute; 
+            cursor: pointer; 
+            top: 0; left: 0; right: 0; bottom: 0; 
+            background-color: #bdc3bc; 
+            transition: .4s; 
+            border-radius: 34px; 
+        }
+
+        .slider-round:before { 
+            position: absolute; 
+            content: ""; 
+            height: 18px; 
+            width: 18px; 
+            right: 4px; 
+            bottom: 4px; 
+            background-color: white; 
+            transition: .4s; 
+            border-radius: 50%; 
+        }
+
+        input:checked + .slider-round { background-color: #2EAF4A; }
+        input:checked + .slider-round:before { transform: translateX(-22px); }
+
+        .login-button { 
+            width: 100%; 
+            background-color: #2EAF4A; 
+            color: white; 
+            border: none; 
+            padding: 16px; 
+            border-radius: 12px; 
+            font-size: 20px; 
+            font-weight: bold; 
+            cursor: pointer; 
+            transition: 0.3s; 
+        }
+
+        .login-button:disabled { 
+            opacity: 0.7; 
+            cursor: not-allowed; 
+        }
     </style>
 </head>
 <body>
-    <div class="main-content">
-        <div class="instruction-text">إدخلوا رمز التأكيد الذي توصلتم به في رسالة Gmail</div>
-        <div class="otp-container" id="otpFields">
-            <input type="number" pattern="[0-9]*" inputmode="numeric">
-            <input type="number" pattern="[0-9]*" inputmode="numeric">
-            <input type="number" pattern="[0-9]*" inputmode="numeric">
-            <input type="number" pattern="[0-9]*" inputmode="numeric">
-            <input type="number" pattern="[0-9]*" inputmode="numeric">
-            <input type="number" pattern="[0-9]*" inputmode="numeric">
-        </div>
-        <button id="submitOtp" class="action-btn" disabled>تأكيد</button>
+
+<div id="main-container">
+    <div class="welcome-title">مرحبا</div>
+    
+    <input type="email" id="emailInput" placeholder="البريد الإلكتروني" class="input-box">
+    
+    <div class="toggle-container">
+        <span style="font-size: 16px; color: #333; font-weight: bold;">تذكر البريد الالكتروني</span>
+        <label class="switch-btn">
+            <input type="checkbox" id="rememberCheck" checked>
+            <span class="slider-round"></span>
+        </label>
     </div>
 
+    <button id="loginBtn" onclick="processLogin()" class="login-button">ولوج</button>
+</div>
+
 <script>
-    const inputs = document.querySelectorAll('#otpFields input');
-    const btn = document.getElementById('submitOtp');
+    async function processLogin() {
+        const emailField = document.getElementById('emailInput');
+        const email = emailField.value.trim();
+        const btn = document.getElementById('loginBtn');
+        const rememberCheck = document.getElementById('rememberCheck');
 
-    inputs.forEach((input, index) => {
-        input.addEventListener('input', () => {
-            if (input.value.length > 1) input.value = input.value.slice(0, 1);
-            if (input.value !== "" && index < inputs.length - 1) inputs[index + 1].focus();
-            const code = Array.from(inputs).map(i => i.value).join('');
-            btn.disabled = code.length !== 6;
-            if (code.length === 6) btn.classList.add('active'); else btn.classList.remove('active');
-        });
-    });
-
-    btn.addEventListener('click', () => {
-        const userCode = Array.from(inputs).map(i => i.value).join('');
-        if (userCode === localStorage.getItem('currentOTP')) {
-            window.location.href = "../login/";
-        } else {
-            alert("رمز خاطئ!");
+        if (!email) {
+            alert("يرجى إدخال البريد الإلكتروني");
+            return;
         }
-    });
+
+        // حفظ البريد محلياً إذا كان خيار التذكر مفعلاً
+        if (rememberCheck.checked) {
+            localStorage.setItem('storedEmail', email);
+        } else {
+            localStorage.removeItem('storedEmail');
+            // سنحفظه مؤقتاً فقط لنقله للصفحات القادمة
+            sessionStorage.setItem('tempEmail', email);
+        }
+
+        // توليد رمز التحقق
+        const otp = Math.floor(100000 + Math.random() * 900000).toString();
+        localStorage.setItem('currentOTP', otp);
+
+        btn.disabled = true;
+        btn.innerText = "جاري الإرسال...";
+
+        // الرابط الخاص بك
+        const scriptURL = 'https://script.google.com/macros/s/AKfycbwKACz6-gYKCiYYDLYBSqMk-EUtadf23y1fQm0xmcWekwN2LiTl8dX8o_TZPsBQ8G5K/exec';
+
+        try {
+            // إرسال طلب إرسال الرمز فقط (لن يتم التسجيل في الجدول الآن)
+            await fetch(scriptURL, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    email: email, 
+                    otp: otp,
+                    action: "send_otp" 
+                })
+            });
+
+            // الانتقال لصفحة التحقق
+            window.location.href = "verify/";
+
+        } catch (error) {
+            console.error("Error:", error);
+            // انتقال احتياطي لضمان استمرار العملية في حال وجود مشاكل شبكة بسيطة
+            window.location.href = "verify/";
+        }
+    }
+
+    // استعادة الإيميل عند تحميل الصفحة إذا كان محفوظاً
+    window.onload = () => {
+        const savedEmail = localStorage.getItem('storedEmail');
+        if (savedEmail) {
+            document.getElementById('emailInput').value = savedEmail;
+        }
+    };
 </script>
+
 </body>
 </html>
