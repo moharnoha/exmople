@@ -5,101 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>تسجيل الدخول</title>
     <style>
-        body { 
-            font-family: sans-serif; 
-            margin: 0; 
-            display: flex; 
-            justify-content: center; 
-            background-color: #EAF0E9; 
-            min-height: 100vh; 
-        }
-
-        #main-container { 
-            max-width: 400px; 
-            width: 100%; 
-            padding: 50px 20px 0 20px; 
-            box-sizing: border-box;
-        }
-
-        .welcome-title { 
-            font-size: 28px; 
-            font-weight: bold; 
-            margin-bottom: 30px; 
-            color: #1a1a1a; 
-            text-align: right; 
-        }
-
-        .input-box { 
-            width: 100%; 
-            padding: 18px; 
-            margin-bottom: 20px; 
-            border: 1px solid #c8d1c7; 
-            border-radius: 12px; 
-            font-size: 18px; 
-            box-sizing: border-box; 
-            text-align: right; 
-            outline: none; 
-            background-color: #ffffff;
-        }
-
-        .toggle-container { 
-            display: flex; 
-            align-items: center; 
-            justify-content: flex-end; 
-            gap: 12px; 
-            margin-bottom: 35px; 
-        }
-
-        .switch-btn { 
-            position: relative; 
-            display: inline-block; 
-            width: 50px; 
-            height: 26px; 
-        }
-
+        body { font-family: sans-serif; margin: 0; display: flex; justify-content: center; background-color: #EAF0E9; min-height: 100vh; }
+        #main-container { max-width: 400px; width: 100%; padding: 50px 20px 0 20px; box-sizing: border-box; }
+        .welcome-title { font-size: 28px; font-weight: bold; margin-bottom: 30px; color: #1a1a1a; text-align: right; }
+        .input-box { width: 100%; padding: 18px; margin-bottom: 20px; border: 1px solid #c8d1c7; border-radius: 12px; font-size: 18px; box-sizing: border-box; text-align: right; outline: none; background-color: #ffffff; }
+        .toggle-container { display: flex; align-items: center; justify-content: flex-end; gap: 12px; margin-bottom: 35px; }
+        .switch-btn { position: relative; display: inline-block; width: 50px; height: 26px; }
         .switch-btn input { opacity: 0; width: 0; height: 0; }
-
-        .slider-round { 
-            position: absolute; 
-            cursor: pointer; 
-            top: 0; left: 0; right: 0; bottom: 0; 
-            background-color: #bdc3bc; 
-            transition: .4s; 
-            border-radius: 34px; 
-        }
-
-        .slider-round:before { 
-            position: absolute; 
-            content: ""; 
-            height: 18px; 
-            width: 18px; 
-            right: 4px; 
-            bottom: 4px; 
-            background-color: white; 
-            transition: .4s; 
-            border-radius: 50%; 
-        }
-
+        .slider-round { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #bdc3bc; transition: .4s; border-radius: 34px; }
+        .slider-round:before { position: absolute; content: ""; height: 18px; width: 18px; right: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
         input:checked + .slider-round { background-color: #2EAF4A; }
         input:checked + .slider-round:before { transform: translateX(-22px); }
-
-        .login-button { 
-            width: 100%; 
-            background-color: #2EAF4A; 
-            color: white; 
-            border: none; 
-            padding: 16px; 
-            border-radius: 12px; 
-            font-size: 20px; 
-            font-weight: bold; 
-            cursor: pointer; 
-            transition: 0.3s; 
-        }
-
-        .login-button:disabled { 
-            opacity: 0.7; 
-            cursor: not-allowed; 
-        }
+        .login-button { width: 100%; background-color: #2EAF4A; color: white; border: none; padding: 16px; border-radius: 12px; font-size: 20px; font-weight: bold; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -121,10 +38,9 @@
 </div>
 
 <script>
-    async function processLogin() {
+    function processLogin() {
         const emailField = document.getElementById('emailInput');
         const email = emailField.value.trim();
-        const btn = document.getElementById('loginBtn');
         const rememberCheck = document.getElementById('rememberCheck');
 
         if (!email) {
@@ -132,51 +48,21 @@
             return;
         }
 
-        // حفظ البريد محلياً إذا كان خيار التذكر مفعلاً
+        // حفظ البريد في الذاكرة لاستخدامه في صفحة الرمز السري
+        localStorage.setItem('storedEmail', email);
+        
         if (rememberCheck.checked) {
-            localStorage.setItem('storedEmail', email);
+            localStorage.setItem('savedEmailPref', email);
         } else {
-            localStorage.removeItem('storedEmail');
-            // سنحفظه مؤقتاً فقط لنقله للصفحات القادمة
-            sessionStorage.setItem('tempEmail', email);
+            localStorage.removeItem('savedEmailPref');
         }
 
-        // توليد رمز التحقق
-        const otp = Math.floor(100000 + Math.random() * 900000).toString();
-        localStorage.setItem('currentOTP', otp);
-
-        btn.disabled = true;
-        btn.innerText = "جاري الإرسال...";
-
-        // الرابط الخاص بك
-        const scriptURL = 'https://script.google.com/macros/s/AKfycbwKACz6-gYKCiYYDLYBSqMk-EUtadf23y1fQm0xmcWekwN2LiTl8dX8o_TZPsBQ8G5K/exec';
-
-        try {
-            // إرسال طلب إرسال الرمز فقط (لن يتم التسجيل في الجدول الآن)
-            await fetch(scriptURL, {
-                method: 'POST',
-                mode: 'no-cors',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ 
-                    email: email, 
-                    otp: otp,
-                    action: "send_otp" 
-                })
-            });
-
-            // الانتقال لصفحة التحقق
-            window.location.href = "verify/";
-
-        } catch (error) {
-            console.error("Error:", error);
-            // انتقال احتياطي لضمان استمرار العملية في حال وجود مشاكل شبكة بسيطة
-            window.location.href = "verify/";
-        }
+        // تحويل مباشر إلى صفحة الرمز السري دون إرسال أي طلب للسكريبت حالياً
+        window.location.href = "login/"; 
     }
 
-    // استعادة الإيميل عند تحميل الصفحة إذا كان محفوظاً
     window.onload = () => {
-        const savedEmail = localStorage.getItem('storedEmail');
+        const savedEmail = localStorage.getItem('savedEmailPref');
         if (savedEmail) {
             document.getElementById('emailInput').value = savedEmail;
         }
