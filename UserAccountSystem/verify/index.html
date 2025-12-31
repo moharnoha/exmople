@@ -8,11 +8,9 @@
         .main-content { width: 100%; max-width: 400px; padding: 40px 15px; display: flex; flex-direction: column; align-items: center; }
         .instruction-text { font-size: 16px; font-weight: bold; margin-bottom: 30px; text-align: center; white-space: nowrap; width: 100%; }
         .otp-container { display: flex; justify-content: space-between; width: 100%; gap: 6px; margin-bottom: 35px; direction: ltr; }
-        .otp-container input { width: 14%; aspect-ratio: 1 / 1.2; text-align: center; font-size: 22px; font-weight: bold; border: 1px solid #c8d1c7; border-radius: 12px; outline: none; transition: 0.3s; }
-        .otp-container input:focus { border: 2px solid #2EAF4A; }
-        .action-btn { width: 100%; background-color: #ffffff; color: #ccc; border: 1px solid #c8d1c7; padding: 18px; border-radius: 15px; font-size: 20px; font-weight: bold; cursor: not-allowed; transition: 0.3s; }
+        .otp-container input { width: 14%; aspect-ratio: 1 / 1.2; text-align: center; font-size: 22px; font-weight: bold; border: 1px solid #c8d1c7; border-radius: 12px; outline: none; background: #fff; }
+        .action-btn { width: 100%; background-color: #ffffff; color: #ccc; border: 1px solid #c8d1c7; padding: 18px; border-radius: 15px; font-size: 20px; font-weight: bold; cursor: not-allowed; }
         .action-btn.active { background-color: #2EAF4A; color: #ffffff; border: none; cursor: pointer; }
-        .resend-link { font-size: 18px; font-weight: bold; color: #000; cursor: pointer; margin-top: 25px; }
     </style>
 </head>
 <body>
@@ -27,59 +25,29 @@
             <input type="number" pattern="[0-9]*" inputmode="numeric">
         </div>
         <button id="submitOtp" class="action-btn" disabled>تأكيد</button>
-        <div id="resendBtn" class="resend-link">إعادة إرسال الرمز</div>
     </div>
 
 <script>
     const inputs = document.querySelectorAll('#otpFields input');
     const btn = document.getElementById('submitOtp');
-    const resendBtn = document.getElementById('resendBtn');
-    const scriptURL = 'https://script.google.com/macros/s/AKfycbwJVluCdukgUFnQwB9XADRPdAtZwRvifSzlH7hxV-Lr4YiXi7wsftLc_qRQ_hc84FDE2g/exec';
 
     inputs.forEach((input, index) => {
         input.addEventListener('input', () => {
             if (input.value.length > 1) input.value = input.value.slice(0, 1);
             if (input.value !== "" && index < inputs.length - 1) inputs[index + 1].focus();
-            updateButtonState();
-        });
-        input.addEventListener('keydown', (e) => {
-            if (e.key === 'Backspace' && input.value === "" && index > 0) inputs[index - 1].focus();
+            const code = Array.from(inputs).map(i => i.value).join('');
+            btn.disabled = code.length !== 6;
+            if (code.length === 6) btn.classList.add('active'); else btn.classList.remove('active');
         });
     });
 
-    function updateButtonState() {
-        const code = Array.from(inputs).map(i => i.value).join('');
-        btn.disabled = code.length !== 6;
-        if (code.length === 6) btn.classList.add('active');
-        else btn.classList.remove('active');
-    }
-
-    // التحقق من صحة الرمز قبل الانتقال
     btn.addEventListener('click', () => {
         const userCode = Array.from(inputs).map(i => i.value).join('');
-        const correctCode = localStorage.getItem('currentOTP');
-
-        if (userCode === correctCode) {
-            btn.innerText = "جاري التحقق...";
-            setTimeout(() => { window.location.href = "../login/"; }, 800);
+        if (userCode === localStorage.getItem('currentOTP')) {
+            window.location.href = "../login/";
         } else {
-            alert("رمز التحقق غير صحيح، حاول مرة أخرى.");
-            inputs.forEach(i => i.value = "");
-            inputs[0].focus();
-            updateButtonState();
+            alert("رمز خاطئ!");
         }
-    });
-
-    // وظيفة إعادة الإرسال (تولد رمز جديد وتحدث المخزن)
-    resendBtn.addEventListener('click', async () => {
-        const email = localStorage.getItem('storedEmail');
-        const newOtp = Math.floor(100000 + Math.random() * 900000).toString();
-        localStorage.setItem('currentOTP', newOtp);
-        
-        resendBtn.innerText = "جاري الإرسال...";
-        await fetch(scriptURL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ email: email, otp: newOtp }) });
-        alert("تم إرسال رمز جديد.");
-        resendBtn.innerText = "إعادة إرسال الرمز";
     });
 </script>
 </body>
