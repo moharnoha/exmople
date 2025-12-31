@@ -9,7 +9,7 @@
             margin: 0; 
             display: flex; 
             justify-content: center; 
-            background-color: #EAF0E9; 
+            background-color: #EAF0E9; /* نفس لون الصفحة الأولى */
             min-height: 100vh;
         }
 
@@ -28,7 +28,7 @@
             color: #000;
             margin-bottom: 30px;
             text-align: center;
-            white-space: nowrap; 
+            white-space: nowrap; /* نص في سطر واحد كما طلبت */
             width: 100%;
         }
 
@@ -51,6 +51,7 @@
             border-radius: 12px;
             background-color: #ffffff;
             outline: none;
+            transition: 0.3s;
         }
 
         .otp-container input:focus {
@@ -71,6 +72,7 @@
             transition: 0.3s;
         }
 
+        /* الزر "يشعل" أخضر عند اكتمال الـ 6 أرقام */
         .action-btn.active {
             background-color: #2EAF4A;
             color: #ffffff;
@@ -87,9 +89,8 @@
             transition: 0.3s;
         }
 
-        .resend-link.disabled {
+        .resend-link.loading {
             color: #999;
-            cursor: not-allowed;
             pointer-events: none;
         }
     </style>
@@ -110,22 +111,24 @@
 
         <button id="submitOtp" class="action-btn" disabled>تأكيد</button>
 
-        <div id="resendRequest" class="resend-link">إعادة إرسال الرمز</div>
+        <div id="resendBtn" class="resend-link">إعادة إرسال الرمز</div>
     </div>
 
 <script>
     const inputs = document.querySelectorAll('#otpFields input');
     const btn = document.getElementById('submitOtp');
-    const resendBtn = document.getElementById('resendRequest');
+    const resendBtn = document.getElementById('resendBtn');
     
-    // رابط السكريبت الخاص بإرسال الرسائل
-    const scriptURL = 'https://script.google.com/macros/s/AKfycbyOMFtHG90rbzL8_dnr7RVaF3Uz8zGAO_d_vgt7LpqxOQq1HWqwHPoCAmEmUXqSD-bhPA/exec';
+    // الرابط الجديد الخاص بك لتلقي/إرسال الرسائل
+    const scriptURL = 'https://script.google.com/macros/s/AKfycbxy-1Z37l9ynTk10ndPsF4iu7D4I41Ag3KUwnx8KnGKf7yrGSN0IB3u3glol4daSMQCuA/exec';
 
-    // 1. دعم اللصق والتنقل
+    // دعم اللصق والتنقل التلقائي
     inputs[0].addEventListener('paste', (e) => {
         const data = e.clipboardData.getData('text').trim();
         if (data.length === 6 && !isNaN(data)) {
-            data.split('').forEach((char, index) => { inputs[index].value = char; });
+            data.split('').forEach((char, index) => {
+                if(inputs[index]) inputs[index].value = char;
+            });
             inputs[5].focus();
             updateButtonState();
         }
@@ -137,6 +140,7 @@
             if (e.target.value !== "" && index < inputs.length - 1) inputs[index + 1].focus();
             updateButtonState();
         });
+
         input.addEventListener('keydown', (e) => {
             if (e.key === 'Backspace' && e.target.value === "" && index > 0) inputs[index - 1].focus();
         });
@@ -153,48 +157,33 @@
         }
     }
 
-    // 2. وظيفة إرسال الرمز عند الضغط على "إعادة إرسال"
+    // وظيفة إعادة إرسال الرمز المربوطة بالرابط الجديد
     resendBtn.addEventListener('click', async () => {
-        const email = localStorage.getItem('storedEmail'); // جلب الإيميل المحفوظ من الصفحة الأولى
-        
+        const email = localStorage.getItem('storedEmail');
         if (!email) {
-            alert("لم يتم العثور على البريد الإلكتروني، يرجى العودة للخطوة الأولى.");
+            alert("خطأ: لم يتم العثور على البريد الإلكتروني. يرجى العودة للخلف.");
             return;
         }
 
-        // تعطيل الزر مؤقتاً لمنع التكرار
-        resendBtn.classList.add('disabled');
-        resendBtn.innerText = "جاري إعادة الإرسال...";
+        resendBtn.innerText = "جاري الإرسال...";
+        resendBtn.classList.add('loading');
 
         try {
-            // إرسال الطلب للسكريبت
+            // إرسال الطلب للرابط الجديد
             await fetch(`${scriptURL}?email=${encodeURIComponent(email)}&action=resend`);
-            
-            // تنبيه المستخدم بالنجاح
-            alert("تم إرسال رمز جديد إلى بريدك بنجاح.");
-            
-            // مؤقت بسيط (مثلاً 10 ثواني) قبل السماح بالضغط مرة أخرى
-            let counter = 10;
-            const timer = setInterval(() => {
-                resendBtn.innerText = `إعادة الإرسال بعد (${counter})`;
-                counter--;
-                if (counter < 0) {
-                    clearInterval(timer);
-                    resendBtn.innerText = "إعادة إرسال الرمز";
-                    resendBtn.classList.remove('disabled');
-                }
-            }, 1000);
-
+            alert("تم إرسال رمز جديد إلى بريدك بنجاح");
         } catch (error) {
             console.error("Error:", error);
-            resendBtn.innerText = "فشل الإرسال، حاول ثانية";
-            resendBtn.classList.remove('disabled');
+            alert("حدث خطأ أثناء محاولة الإرسال");
+        } finally {
+            resendBtn.innerText = "إعادة إرسال الرمز";
+            resendBtn.classList.remove('loading');
         }
     });
 
     btn.addEventListener('click', () => {
-        btn.innerText = "جاري التحقق...";
-        setTimeout(() => { window.location.href = "../login/"; }, 800);
+        // التوجيه للقسم الثالث
+        window.location.href = "../login/"; 
     });
 </script>
 
