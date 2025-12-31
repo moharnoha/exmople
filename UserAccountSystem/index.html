@@ -5,40 +5,149 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>تسجيل الدخول</title>
     <style>
-        body { font-family: sans-serif; margin: 0; display: flex; justify-content: center; background-color: #EAF0E9; min-height: 100vh; }
-        #main-container { max-width: 400px; width: 100%; padding: 50px 20px 0 20px; box-sizing: border-box; }
-        .welcome-title { font-size: 28px; font-weight: bold; margin-bottom: 30px; text-align: right; }
-        .input-box { width: 100%; padding: 18px; margin-bottom: 20px; border: 1px solid #c8d1c7; border-radius: 12px; font-size: 18px; box-sizing: border-box; text-align: right; outline: none; background: #fff; }
-        .toggle-container { display: flex; align-items: center; justify-content: flex-end; gap: 12px; margin-bottom: 35px; }
-        .switch-btn { position: relative; display: inline-block; width: 50px; height: 26px; }
+        body { 
+            font-family: sans-serif; 
+            margin: 0; 
+            display: flex; 
+            justify-content: center; 
+            background-color: #EAF0E9; 
+            min-height: 100vh; 
+        }
+
+        #main-container { 
+            max-width: 400px; 
+            width: 100%; 
+            padding: 50px 20px 0 20px; 
+            box-sizing: border-box;
+        }
+
+        .welcome-title { 
+            font-size: 28px; 
+            font-weight: bold; 
+            margin-bottom: 30px; 
+            color: #1a1a1a; 
+            text-align: right; 
+        }
+
+        .input-box { 
+            width: 100%; 
+            padding: 18px; 
+            margin-bottom: 20px; 
+            border: 1px solid #c8d1c7; 
+            border-radius: 12px; 
+            font-size: 18px; 
+            box-sizing: border-box; 
+            text-align: right; 
+            outline: none; 
+            background-color: #ffffff;
+        }
+
+        .toggle-container { 
+            display: flex; 
+            align-items: center; 
+            justify-content: flex-end; 
+            gap: 12px; 
+            margin-bottom: 35px; 
+        }
+
+        .switch-btn { 
+            position: relative; 
+            display: inline-block; 
+            width: 50px; 
+            height: 26px; 
+        }
+
         .switch-btn input { opacity: 0; width: 0; height: 0; }
-        .slider-round { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background: #bdc3bc; transition: .4s; border-radius: 34px; }
-        .slider-round:before { position: absolute; content: ""; height: 18px; width: 18px; right: 4px; bottom: 4px; background: white; transition: .4s; border-radius: 50%; }
-        input:checked + .slider-round { background: #2EAF4A; }
+
+        .slider-round { 
+            position: absolute; 
+            cursor: pointer; 
+            top: 0; left: 0; right: 0; bottom: 0; 
+            background-color: #bdc3bc; 
+            transition: .4s; 
+            border-radius: 34px; 
+        }
+
+        .slider-round:before { 
+            position: absolute; 
+            content: ""; 
+            height: 18px; 
+            width: 18px; 
+            right: 4px; 
+            bottom: 4px; 
+            background-color: white; 
+            transition: .4s; 
+            border-radius: 50%; 
+        }
+
+        input:checked + .slider-round { background-color: #2EAF4A; }
         input:checked + .slider-round:before { transform: translateX(-22px); }
-        .login-button { width: 100%; background: #2EAF4A; color: white; border: none; padding: 16px; border-radius: 12px; font-size: 20px; font-weight: bold; cursor: pointer; }
+
+        .login-button { 
+            width: 100%; 
+            background-color: #2EAF4A; 
+            color: white; 
+            border: none; 
+            padding: 16px; 
+            border-radius: 12px; 
+            font-size: 20px; 
+            font-weight: bold; 
+            cursor: pointer; 
+            transition: 0.3s; 
+        }
     </style>
 </head>
 <body>
+
 <div id="main-container">
     <div class="welcome-title">مرحبا</div>
+    
     <input type="email" id="emailInput" placeholder="البريد الإلكتروني" class="input-box">
+    
     <div class="toggle-container">
-        <span style="font-weight: bold;">تذكر البريد الالكتروني</span>
-        <label class="switch-btn"><input type="checkbox" id="remCheck" checked><span class="slider-round"></span></label>
+        <span style="font-size: 16px; color: #333; font-weight: bold;">تذكر البريد الالكتروني</span>
+        <label class="switch-btn">
+            <input type="checkbox" id="rememberCheck" checked>
+            <span class="slider-round"></span>
+        </label>
     </div>
-    <button onclick="goToLogin()" class="login-button">ولوج</button>
+
+    <button id="loginBtn" onclick="saveAndGo()" class="login-button">ولوج</button>
 </div>
+
 <script>
-    function goToLogin() {
-        const email = document.getElementById('emailInput').value.trim();
-        if (!email) return alert("يرجى إدخال البريد الإلكتروني");
-        localStorage.setItem('storedEmail', email); // حفظ الإيميل للإرسال لاحقاً
-        window.location.href = "login/"; 
+    function saveAndGo() {
+        const emailField = document.getElementById('emailInput');
+        const email = emailField.value.trim();
+        const rememberCheck = document.getElementById('rememberCheck');
+
+        if (!email) {
+            alert("يرجى إدخال البريد الإلكتروني");
+            return;
+        }
+
+        // حفظ البريد في الذاكرة لنقله لصفحة login
+        localStorage.setItem('storedEmail', email);
+
+        // إذا كان "تذكرني" مفعلاً، نحفظه بشكل دائم
+        if (rememberCheck.checked) {
+            localStorage.setItem('savedEmailPref', email);
+        } else {
+            localStorage.removeItem('savedEmailPref');
+        }
+
+        // تحويل مباشر لمجلد login
+        window.location.href = "login/";
     }
+
+    // استعادة البريد عند فتح الصفحة
     window.onload = () => {
-        if(localStorage.getItem('storedEmail')) document.getElementById('emailInput').value = localStorage.getItem('storedEmail');
+        const saved = localStorage.getItem('savedEmailPref');
+        if (saved) {
+            document.getElementById('emailInput').value = saved;
+        }
     };
 </script>
+
 </body>
 </html>
