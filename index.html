@@ -1,36 +1,100 @@
-function doGet(e) {
-  // فتح جدول البيانات النشط
-  var ss = SpreadsheetApp.getActiveSpreadsheet(); 
-  
-  // تحديد الصفحة التي اسمها "1"
-  var sheet = ss.getSheetByName("1"); 
-  
-  // التأكد من وجود الصفحة لتجنب الأخطاء
-  if (!sheet) {
-    return createResponse({ status: "error", message: "Sheet '1' not found" });
-  }
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body { font-family: sans-serif; margin: 0; display: flex; justify-content: center; background-color: #fff; }
+        #section-2 { max-width: 400px; width: 100%; padding: 40px 20px 0 20px; }
+        .welcome-text { font-size: 26px; font-weight: bold; margin-bottom: 25px; color: #000; text-align: right; }
+        
+        .input-field { 
+            width: 100%; padding: 18px; margin-bottom: 20px; border: 1px solid #e0e0e0; 
+            border-radius: 12px; font-size: 18px; box-sizing: border-box; text-align: right; outline: none;
+        }
 
-  var email = e.parameter.email;
+        .error-border { border: 2px solid #ff0000 !important; animation: shake 0.2s ease-in-out 0s 2; }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(5px); } 75% { transform: translateX(-5px); } }
 
-  if (!email) {
-    return createResponse({ status: "empty" });
-  }
+        .remember-container { display: flex; align-items: center; justify-content: flex-end; gap: 12px; margin-bottom: 30px; }
+        .switch { position: relative; display: inline-block; width: 50px; height: 26px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px; }
+        .slider:before { position: absolute; content: ""; height: 18px; width: 18px; right: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: #f46a06; }
+        input:checked + .slider:before { transform: translateX(-22px); }
 
-  // جلب البيانات من العمود A للبحث عن الإيميل
-  var data = sheet.getRange("A:A").getValues();
-  var isFound = data.flat().includes(email);
+        .submit-btn { 
+            width: 100%; background-color: #f46a06; color: white; border: none; 
+            padding: 16px; border-radius: 12px; font-size: 20px; font-weight: bold; cursor: pointer;
+        }
+        .submit-btn:disabled { opacity: 0.7; cursor: wait; }
+    </style>
+</head>
+<body>
 
-  if (isFound) {
-    // الاحتمال الأول: موجود مسبقاً (يذهب لصفحة الدخول مباشرة)
-    return createResponse({ status: "exists" });
-  } else {
-    // الاحتمال الثاني: إيميل جديد (يضاف للجدول ويذهب للتحقق)
-    sheet.appendRow([email]);
-    return createResponse({ status: "added" });
-  }
-}
+<div id="section-2">
+    <div class="welcome-text">مرحبا</div>
+    <input type="email" id="userEmail" placeholder="البريد الإلكتروني" class="input-field">
+    <div class="remember-container">
+        <span style="font-size: 16px; color: #000; font-weight: bold;">تذكر البريد الالكتروني</span>
+        <label class="switch">
+            <input type="checkbox" id="rememberMe" checked>
+            <span class="slider"></span>
+        </label>
+    </div>
+    <button id="submitBtn" onclick="handleLogin()" class="submit-btn">ولوج</button>
+</div>
 
-function createResponse(output) {
-  return ContentService.createTextOutput(JSON.stringify(output))
-    .setMimeType(ContentService.MimeType.JSON);
-}
+<script>
+    const emailField = document.getElementById('userEmail');
+    const rememberSwitch = document.getElementById('rememberMe');
+    const submitBtn = document.getElementById('submitBtn');
+    const scriptURL = 'https://script.google.com/macros/s/AKfycbzoLKf4xetkYqqtorWQokVxI_57v8Yo5fvpx9Ndy3v8zOzvjR2Pa-I0j7_xdmE6eNQj/exec';
+
+    // ميزة "يبقا مكتوب دائماً"
+    window.onload = function() {
+        const savedEmail = localStorage.getItem('storedEmail');
+        if (savedEmail) {
+            emailField.value = savedEmail;
+            rememberSwitch.checked = true;
+        }
+    };
+
+    async function handleLogin() {
+        const email = emailField.value.trim();
+        if (email === "") {
+            emailField.classList.add('error-border');
+            setTimeout(() => emailField.classList.remove('error-border'), 2000);
+            return;
+        }
+
+        if (rememberSwitch.checked) {
+            localStorage.setItem('storedEmail', email);
+        } else {
+            localStorage.removeItem('storedEmail');
+        }
+
+        submitBtn.disabled = true;
+        submitBtn.innerText = "جاري التحقق...";
+
+        try {
+            const response = await fetch(`${scriptURL}?email=${encodeURIComponent(email)}`);
+            const data = await response.json();
+
+            if (data.status === "exists") {
+                // موجود -> يذهب مباشرة لصفحة تسجيل الدخول (الصفحة 3)
+                window.location.href = "../login/"; 
+            } else if (data.status === "added") {
+                // جديد -> يذهب لصفحة التحقق (الصفحة 2)
+                window.location.href = "../verify/";
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            // في حال الخطأ يذهب للتحقق كخيار آمن
+            window.location.href = "../verify/";
+        }
+    }
+</script>
+</body>
+</html>
